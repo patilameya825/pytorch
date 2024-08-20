@@ -1,3 +1,5 @@
+// Copyright 2024 Arm Ltd. and/or its affiliates
+
 #include <ATen/Config.h>
 
 #include <ATen/Context.h>
@@ -346,6 +348,14 @@ bool Context::hasMKL() {
 
 bool Context::hasMKLDNN() {
 #if AT_MKLDNN_ENABLED()
+  return true;
+#else
+  return false;
+#endif
+}
+
+bool Context::hasKleidiAI() {
+#if AT_KLEIDIAI_ENABLED()
   return true;
 #else
   return false;

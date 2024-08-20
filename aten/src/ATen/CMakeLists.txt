@@ -1,3 +1,5 @@
+# Copyright 2024 Arm Ltd. and/or its affiliates
+
 cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 
@@ -197,6 +199,9 @@ endif()
 # XNNPACK
 file(GLOB native_xnnpack "native/xnnpack/*.cpp")
 
+# KLEIDIAI
+file(GLOB native_kleidiai "native/kleidiai/*.cpp")
+
 # Add files needed from jit folders
 append_filelist("jit_core_headers" ATen_CORE_HEADERS)
 append_filelist("jit_core_sources" ATen_CORE_SRCS)
@@ -225,6 +230,10 @@ if(USE_LIGHTWEIGHT_DISPATCH)
 endif()
 if(AT_MKL_ENABLED)
   set(all_cpu_cpp ${all_cpu_cpp} ${mkl_cpp})
+endif()
+if(AT_KLEIDIAI_ENABLED)
+  set(all_cpu_cpp ${all_cpu_cpp} ${native_kleidiai})
+  include_directories(SYSTEM INTERFACE ${KLEIDIAI_INCLUDE_DIRS})
 endif()
 if(AT_MKLDNN_ENABLED)
   set(all_cpu_cpp ${all_cpu_cpp} ${mkldnn_cpp})

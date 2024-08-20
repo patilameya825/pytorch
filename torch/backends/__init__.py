@@ -1,3 +1,5 @@
+# Copyright 2024 Arm Ltd. and/or its affiliates
+
 # mypy: allow-untyped-defs
 import types
 from contextlib import contextmanager
@@ -68,4 +70,5 @@ from torch.backends import (
     nnpack as nnpack,
     openmp as openmp,
     quantized as quantized,
+    kleidiai as kleidiai,
 )

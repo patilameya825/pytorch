@@ -1,3 +1,5 @@
+// Copyright 2024 Arm Ltd. and/or its affiliates
+
 #define TORCH_ASSERT_ONLY_METHOD_OPERATORS
 #include <ATen/Context.h>
 #include <ATen/Dispatch.h>
@@ -23,6 +25,10 @@
 #include <c10/util/accumulate.h>
 #include <c10/util/irange.h>
 #include <variant>
+
+#if AT_KLEIDIAI_ENABLED()
+#include "kleidiai/kai_kernels.h"
+#endif
 
 #ifndef AT_PER_OPERATOR_HEADERS
 #include <ATen/Functions.h>
@@ -3604,6 +3610,66 @@ Tensor& _int_mm_out_cpu(const Tensor& self, const Tensor& mat2, Tensor& result) 
 Tensor _int_mm_cpu(const Tensor& self, const Tensor& mat2) {
   Tensor result = at::empty({self.size(0), mat2.size(1)}, self.options().dtype(at::kInt));
   return _int_mm_out_cpu(self, mat2, result);
+}
+
+int64_t get_kai_weight_pack_int4_size(
+    const int64_t n,
+    const int64_t k,
+    const int64_t bl) {
+  int64_t pack_bytes = 0;
+#if AT_KLEIDIAI_ENABLED()
+  pack_bytes = kleidiai::kai_pack_rhs_size(n, k, bl);
+#endif
+  return pack_bytes;
+}
+
+Tensor kai_weight_pack_int4(
+    const Tensor& weight,
+    const Tensor& scales,
+    const int64_t N,
+    const int64_t K,
+    const int64_t groupsize) {
+  TORCH_CHECK(
+      groupsize == 0 || groupsize == 32,
+      __func__,
+      ": Group size should be 32 or 0");
+  if (!groupsize)
+    TORCH_CHECK(
+        scales.numel() != 0,
+        __func__,
+        ": Scales cant be null for channelwise weight packing");
+  const int64_t rhs_packed_size =
+      get_kai_weight_pack_int4_size(N, K, groupsize);
+  auto weight_packed =
+      at::empty({rhs_packed_size}, at::TensorOptions().dtype(at::kByte));
+#if AT_KLEIDIAI_ENABLED()
+  kleidiai::kai_pack_rhs(weight_packed, weight, scales, N, K, groupsize);
+#endif
+  return weight_packed;
+}
+
+Tensor kai_input_quant_mm_int4(
+    const Tensor& input,
+    const Tensor& weight,
+    const int64_t m,
+    const int64_t n,
+    const int64_t k,
+    const int64_t groupsize) {
+  TORCH_CHECK(
+      groupsize == 0 || groupsize == 32,
+      __func__,
+      ": Group size should be 32 or 0");
+  auto output = at::empty({m, n}, at::TensorOptions().dtype(at::kFloat));
+#if AT_KLEIDIAI_ENABLED()
+  // TODO:: Make it uniform wrapper
+  if (32 == groupsize) {
+    kleidiai::kai_quant_pack_lfs_mm_groupwise(
+        output, input, weight, m, n, k, groupsize);
+  } else {
+    kleidiai::kai_quant_pack_lfs_mm_channelwise(output, input, weight, m, n, k);
+  }
+#endif
+  return output;
 }
 
 } // namespace native

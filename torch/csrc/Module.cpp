@@ -1,3 +1,5 @@
+// Copyright 2024 Arm Ltd. and/or its affiliates
+
 #include <ATen/DeviceAccelerator.h>
 #include <fmt/core.h>
 #include <sys/types.h>
@@ -1813,6 +1815,8 @@ Call this whenever a new thread is created in order to propagate values from
   ASSERT_TRUE(
       set_module_attr("has_openmp", at::hasOpenMP() ? Py_True : Py_False));
   ASSERT_TRUE(set_module_attr("has_mkl", at::hasMKL() ? Py_True : Py_False));
+  ASSERT_TRUE(
+    set_module_attr("has_kleidiai", at::hasKleidiAI() ? Py_True : Py_False));
   ASSERT_TRUE(
       set_module_attr("has_lapack", at::hasLAPACK() ? Py_True : Py_False));
 

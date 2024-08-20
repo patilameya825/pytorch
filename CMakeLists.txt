@@ -1,3 +1,5 @@
+# Copyright 2024 Arm Ltd. and/or its affiliates
+
 cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 # cmake_policy(SET CMP0022 NEW) cmake_policy(SET CMP0023 NEW)
 
@@ -390,6 +392,8 @@ cmake_dependent_option(
 cmake_dependent_option(BUILD_FUNCTORCH "Build Functorch" ON "BUILD_PYTHON" OFF)
 cmake_dependent_option(BUILD_BUNDLE_PTXAS "Bundle PTX into torch/bin fodler"
                        OFF "USE_CUDA" OFF)
+cmake_dependent_option(USE_KLEIDIAI "Use KleidiAI for the Arm architecture." ON
+                        "CPU_AARCH64" OFF)
 
 option(USE_MIMALLOC "Use mimalloc" OFF)
 # Enable third party mimalloc library to improve memory allocation performance

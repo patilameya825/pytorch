@@ -1,3 +1,5 @@
+# Copyright 2024 Arm Ltd. and/or its affiliates
+
 # Prints accumulated Caffe2 configuration summary
 function(caffe2_print_configuration_summary)
   message(STATUS "")
@@ -142,6 +144,9 @@ function(caffe2_print_configuration_summary)
   if(${USE_MKLDNN})
     message(STATUS "  USE_MKLDNN_ACL        : ${USE_MKLDNN_ACL}")
     message(STATUS "  USE_MKLDNN_CBLAS      : ${USE_MKLDNN_CBLAS}")
+  endif()
+  if(${USE_KLEIDIAI})
+    message(STATUS "  USE_KLEIDIAI          : ${USE_KLEIDIAI}")
   endif()
   message(STATUS "  USE_UCC               : ${USE_UCC}")
   if(${USE_UCC})

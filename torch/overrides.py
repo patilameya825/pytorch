@@ -1,3 +1,5 @@
+# Copyright 2024 Arm Ltd. and/or its affiliates
+
 """
 Python implementation of ``__torch_function__``
 
@@ -162,6 +164,7 @@ def get_ignored_functions() -> Set[Callable]:
         torch.has_mkl,
         torch.has_mps,
         torch.has_mkldnn,
+        torch.has_kleidiai,
         torch.has_openmp,
         torch.iinfo,
         torch.memory_format,
