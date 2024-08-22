@@ -3,7 +3,7 @@
 #include "kai_kernels.h"
 #include <ATen/Parallel.h>
 
-#include <float.h>
+#include <cfloat>
 #include <omp.h>
 #include <algorithm>
 #include <iostream>
