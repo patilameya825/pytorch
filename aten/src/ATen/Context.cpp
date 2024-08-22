@@ -355,11 +355,7 @@ bool Context::hasMKLDNN() {
 }
 
 bool Context::hasKleidiAI() {
-#if AT_KLEIDIAI_ENABLED()
-  return true;
-#else
-  return false;
-#endif
+  return AT_KLEIDIAI_ENABLED();
 }
 
 bool Context::hasOpenMP() {
