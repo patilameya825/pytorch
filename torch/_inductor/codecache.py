@@ -213,6 +213,11 @@ class CacheBase:
             else:
                 system["device"]["name"] = device_properties.gcnArchName
                 system["version"]["hip"] = torch.version.hip
+
+            if config.is_fbcode() and config.triton_cache_key_with_commit_hash:
+                commit_hash = subprocess.check_output(['hg', 'id'])
+                system["version"]["commit"] = commit_hash.decode('utf-8').strip()
+
         except (AssertionError, RuntimeError):
             # If cuda is not installed, none of the above config is relevant.
             system = {}
