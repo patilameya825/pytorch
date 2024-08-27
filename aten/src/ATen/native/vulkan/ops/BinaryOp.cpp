@@ -13,8 +13,7 @@ namespace ops {
 
 using namespace api::utils;
 
-
-namespace{
+namespace {
 Tensor binary_op_scalar(
     const Tensor& self_arg,
     const Scalar& other,
@@ -556,8 +555,7 @@ Tensor& floor_divide_tensor_(Tensor& self, const Tensor& other_arg) {
       std::optional<Scalar>(),
       VK_KERNEL(floor_divide_inplace));
 }
-}
-
+} // namespace
 
 TORCH_LIBRARY_IMPL(aten, Vulkan, m) {
   m.impl(TORCH_SELECTIVE_NAME("aten::add.Scalar"), TORCH_FN(add_scalar));
@@ -597,7 +595,6 @@ TORCH_LIBRARY_IMPL(aten, Vulkan, m) {
       TORCH_SELECTIVE_NAME("aten::floor_divide_.Tensor"),
       TORCH_FN(floor_divide_tensor_));
 }
-
 
 } // namespace ops
 } // namespace vulkan
