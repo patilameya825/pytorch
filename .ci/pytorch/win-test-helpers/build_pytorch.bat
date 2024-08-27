@@ -56,6 +56,7 @@ if "%USE_XPU%"=="1" (
   if errorlevel 1 exit /b 1
   call "C:\Program Files (x86)\Intel\oneAPI\pti\latest\env\vars.bat"
   if errorlevel 1 exit /b 1
+  SET USE_KINETO=0
 )
 
 @echo on
