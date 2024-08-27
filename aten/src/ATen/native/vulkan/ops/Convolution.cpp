@@ -836,7 +836,7 @@ Tensor quantized_convolution(
 
 namespace conv1d {
 
-vTensor pack_weights_using_width_packing(const Tensor& weight_arg) {
+static vTensor pack_weights_using_width_packing(const Tensor& weight_arg) {
   Tensor weight = weight_arg;
 
   if (weight.is_cpu()) {
