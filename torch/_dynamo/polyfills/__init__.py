@@ -162,3 +162,7 @@ def foreach_lerp_inplace(self, end, weight):
     result = torch._foreach_sub(self, end)
     result = torch._foreach_mul(result, weight)
     return torch._foreach_add_(self, result)
+
+
+def foreach_pow_scalar(scalar, exps):
+    return torch._foreach_pow([scalar for _ in exps], exps)
