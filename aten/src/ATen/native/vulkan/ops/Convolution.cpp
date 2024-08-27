@@ -1150,7 +1150,7 @@ c10::intrusive_ptr<Conv2dPackedContext> create_qtconv2d_context(
       output_max));
 }
 
-Tensor run_conv2d_context_impl(
+static Tensor run_conv2d_context_impl(
     const Tensor& input_arg,
     const c10::intrusive_ptr<Conv2dPackedContext>& conv_context,
     double scale,
