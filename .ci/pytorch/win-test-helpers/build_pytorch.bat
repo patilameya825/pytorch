@@ -54,9 +54,9 @@ if "%USE_XPU%"=="1" (
   :: Activate xpu environment - VS env is required for xpu
   call "C:\Program Files (x86)\Intel\oneAPI\pytorch-gpu-dev-0.5\oneapi-vars.bat"
   if errorlevel 1 exit /b 1
-  call "C:\Program Files (x86)\Intel\oneAPI\pti\latest\env\vars.bat"
-  if errorlevel 1 exit /b 1
-  SET USE_KINETO=0
+  @REM call "C:\Program Files (x86)\Intel\oneAPI\pti\latest\env\vars.bat"
+  @REM if errorlevel 1 exit /b 1
+  @REM SET USE_KINETO=0
 )
 
 @echo on
