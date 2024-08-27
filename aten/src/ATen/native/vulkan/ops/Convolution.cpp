@@ -53,7 +53,7 @@ inline bool is_pointwise(const IntArrayRef weight_size) {
   return true;
 }
 
-Conv2dMethod determine_method(
+static Conv2dMethod determine_method(
     const IntArrayRef weight_size,
     const IntArrayRef stride,
     const IntArrayRef padding,
@@ -359,7 +359,7 @@ struct Params final {
   api::utils::vec2 clamp;
 };
 
-void record_op(
+static void record_op(
     api::Context* const context,
     api::ShaderInfo& compute_shader,
     vTensor& v_output,
@@ -432,7 +432,7 @@ struct QParams final {
   api::utils::vec2 clamp;
 };
 
-void record_quantized_op(
+static void record_quantized_op(
     api::Context* const context,
     api::ShaderInfo& compute_shader,
     vTensor& v_output,
@@ -1291,7 +1291,7 @@ Tensor run_qconv2d_context(
   return run_conv2d_context_impl(input_arg, conv_context, scale, zero_point);
 }
 
-Tensor quantized_conv2d(
+static Tensor quantized_conv2d(
     const Tensor& input,
     const Tensor& weight,
     const std::optional<Tensor>& bias,
@@ -1444,7 +1444,7 @@ c10::intrusive_ptr<Conv1dPackedContext> create_conv1d_context(
       Conv1dPackedContext(weight, bias, stride, padding, dilation, groups));
 }
 
-Tensor convolution1d(
+static Tensor convolution1d(
     const Tensor& input,
     const Tensor& weight,
     const std::optional<Tensor>& bias,

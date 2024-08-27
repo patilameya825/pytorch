@@ -1,3 +1,4 @@
+#ifdef USE_VULKAN_API
 #include <ATen/ArrayRef.h>
 #include <ATen/native/vulkan/ops/Common.h>
 #include <ATen/native/vulkan/ops/QuantizedFunctions.h>
@@ -12,6 +13,8 @@ namespace ops {
 
 using namespace api::utils;
 
+
+namespace{
 Tensor binary_op_scalar(
     const Tensor& self_arg,
     const Scalar& other,
@@ -589,8 +592,8 @@ Tensor& floor_divide_tensor_(Tensor& self, const Tensor& other_arg) {
       std::optional<Scalar>(),
       VK_KERNEL(floor_divide_inplace));
 }
+}
 
-#ifdef USE_VULKAN_API
 
 TORCH_LIBRARY_IMPL(aten, Vulkan, m) {
   m.impl(TORCH_SELECTIVE_NAME("aten::add.Scalar"), TORCH_FN(add_scalar));
@@ -631,9 +634,9 @@ TORCH_LIBRARY_IMPL(aten, Vulkan, m) {
       TORCH_FN(floor_divide_tensor_));
 }
 
-#endif /* USE_VULKAN_API */
 
 } // namespace ops
 } // namespace vulkan
 } // namespace native
 } // namespace at
+#endif /* USE_VULKAN_API */
