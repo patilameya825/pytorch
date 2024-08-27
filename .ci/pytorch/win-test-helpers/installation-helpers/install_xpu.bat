@@ -1,6 +1,5 @@
 REM Description: Install Intel Support Packages on Windows
 REM BKM reference: https://www.intel.com/content/www/us/en/developer/articles/tool/pytorch-prerequisites-for-intel-gpu/2-5.html
-REM To-do: Add driver installation in this file.
 
 set XPU_PARENT_DIR=C:\Program Files (x86)\Intel
 set XPU_PYTORCH_BUNDLE_URL=https://registrationcenter-download.intel.com/akdlm/IRC_NAS/9d1a91e2-e8b8-40a5-8c7f-5db768a6a60c/w_intel-for-pytorch-gpu-dev_p_0.5.3.37_offline.exe
@@ -11,6 +10,14 @@ set XPU_PTI_VERSION="0.9.0+36"
 set XPU_PTI_PRODUCT_NAME=intel.oneapi.win.intel-pti-dev.product
 set INSTALL_FRESH_BUNDLE=0
 set INSTALL_FRESH_PTI=0
+
+set XPU_DRIVER_LINK=https://downloadmirror.intel.com/830975/gfx_win_101.5972.exe
+
+curl -o xpu_driver.exe --retry 3 --retry-all-errors -k %XPU_DRIVER_LINK%
+echo "XPU Driver installing..."
+start /wait "Intel XPU Driver Installer" "xpu_driver.exe"
+if errorlevel 1 exit /b 1
+del xpu_driver.exe
 
 REM Check if oneAPI is already installed
 if not exist "%XPU_PARENT_DIR%\Installer\installer.exe" (
@@ -96,3 +103,7 @@ if "%INSTALL_FRESH_PTI%"=="1" (
     if not errorlevel 0 exit /b
     del xpu_pti.exe
 )
+
+REM Set environment variables
+call "%XPU_PARENT_DIR%\oneAPI\pytorch-gpu-dev-0.5\oneapi-vars.bat" 
+call "%XPU_PARENT_DIR%\oneAPI\pti\latest\env\vars.bat"
