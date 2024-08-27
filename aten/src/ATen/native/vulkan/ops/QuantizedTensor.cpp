@@ -1,3 +1,4 @@
+#ifdef USE_VULKAN_API
 #include <ATen/native/vulkan/ops/Common.h>
 #include <ATen/native/vulkan/ops/QuantizedFunctions.h>
 #include <ATen/native/vulkan/ops/Utils.h>
@@ -179,8 +180,6 @@ Tensor dequantize(const Tensor& self) {
   return dequantize_helper(self, q_scale, zero_point, kFloat);
 }
 
-#ifdef USE_VULKAN_API
-
 TORCH_LIBRARY_IMPL(aten, Vulkan, m) {
   m.impl(
       TORCH_SELECTIVE_NAME("aten::quantize_per_tensor"), quantize_per_tensor);
@@ -192,9 +191,8 @@ TORCH_LIBRARY_IMPL(aten, Vulkan, m) {
   m.impl(TORCH_SELECTIVE_NAME("aten::dequantize.self"), dequantize);
 }
 
-#endif /* USE_VULKAN_API */
-
 } // namespace ops
 } // namespace vulkan
 } // namespace native
 } // namespace at
+#endif /* USE_VULKAN_API */
