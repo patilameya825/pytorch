@@ -27,6 +27,7 @@ from torch.distributed._tensor._utils import try_find_mesh_from_args
 from torch.distributed._tensor.placement_types import (
     DTensorSpec,
     Partial,
+    Placement,
     Replicate,
     TensorMeta,
 )
@@ -237,12 +238,18 @@ class OpDispatcher:
                 return args[0]
             else:
                 if op_call == aten._amp_foreach_non_finite_check_and_unscale_.default:
+                    grad_placements = cast(list[dtensor.DTensor], args[0])[0].placements
+                    found_inf_placements: list[Placement] = []
+                    for placement in grad_placements:
+                        if isinstance(placement, Replicate):
+                            found_inf_placements.append(placement)
+                        else:
+                            found_inf_placements.append(Partial("max"))
                     found_inf_dtensor = dtensor.DTensor.from_local(
-                        args[1], mesh, [Partial("max") for _ in range(mesh.ndim)]
+                        args[1], mesh, found_inf_placements
                     )
                     found_inf = found_inf_dtensor.full_tensor()
-                    if hasattr(args[1], "copy_"):
-                        args[1].copy_(found_inf)
+                    cast(torch.Tensor, args[1]).copy_(found_inf)
                 return None
         elif _is_out_variant_op(op_call):
             # out variant could possibly have multiple out args (i.e. lu_unpack.out)
