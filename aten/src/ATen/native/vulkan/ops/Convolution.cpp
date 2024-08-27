@@ -862,7 +862,7 @@ vTensor pack_weights_using_width_packing(const Tensor& weight_arg) {
  * This is a full implementation. For algorithm details, refer to the shader
  * kernel code.
  */
-Tensor run_conv1d_context_impl(
+static Tensor run_conv1d_context_impl(
     const Tensor& input_arg,
     const Tensor& weight_arg,
     const std::optional<Tensor>& bias_arg_opt,
