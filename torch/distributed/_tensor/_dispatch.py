@@ -238,9 +238,9 @@ class OpDispatcher:
             else:
                 if op_call == aten._amp_foreach_non_finite_check_and_unscale_.default:
                     found_inf_dtensor = dtensor.DTensor.from_local(
-                        args[1], mesh, [Partial("max")]
+                        args[1], mesh, [Partial("max") for _ in range(mesh.ndim)]
                     )
-                    found_inf = found_inf_dtensor.max().full_tensor()
+                    found_inf = found_inf_dtensor.full_tensor()
                     if hasattr(args[1], "copy_"):
                         args[1].copy_(found_inf)
                 return None
