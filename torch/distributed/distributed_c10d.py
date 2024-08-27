@@ -29,6 +29,7 @@ from torch._C._distributed_c10d import (
     AllreduceCoalescedOptions,
     AllreduceOptions,
     AllToAllOptions,
+    Backend as C10dBackend,
     BarrierOptions,
     BroadcastOptions,
     DebugLevel,
@@ -55,6 +56,7 @@ __all__ = [
     "Backend",
     "BackendConfig",
     "GroupMember",
+    "C10dBackend",
     "P2POp",
     "all_gather",
     "all_gather_coalesced",
@@ -143,6 +145,7 @@ def _export_c_types() -> None:
         AllToAllOptions,
         BarrierOptions,
         BroadcastOptions,
+        C10dBackend,
         GatherOptions,
         PrefixStore,
         ProcessGroup,
@@ -1531,7 +1534,7 @@ def init_process_group(
             backend,
             store,
             group_name,
-            pg_options=pg_options,
+            backend_options=pg_options,
             timeout=timeout,
             device_id=device_id,
             group_desc="default_pg",
@@ -1628,7 +1631,7 @@ def _new_process_group_helper(
     backend,
     store,
     group_name,
-    pg_options=None,
+    backend_options=None,
     timeout=None,
     pg_tag=None,
     device_id=None,
@@ -1704,10 +1707,12 @@ def _new_process_group_helper(
             return GroupMember.NON_GROUP_MEMBER, None
 
     prefix_store = PrefixStore(f"{group_name}/", store)
-    base_pg_options = ProcessGroup.Options(backend=str(backend))
-    base_pg_options._timeout = timeout
+    # The backend for PG will be set later based on what's inside BackendConfig
+    # and timeout are set in each backend's option.
     pg: ProcessGroup = ProcessGroup(
-        prefix_store, group_rank, group_size, base_pg_options
+        prefix_store,
+        group_rank,
+        group_size,
     )
     if device_id:
         pg.bound_device_id = device_id
@@ -1735,7 +1740,6 @@ def _new_process_group_helper(
                     backend_prefix_store,
                     backend_class.rank(),
                     backend_class.size(),
-                    base_pg_options,
                 )
         elif backend_str == Backend.GLOO:
             # TODO: remove this check after lazy initialization is supported
@@ -1748,28 +1752,30 @@ def _new_process_group_helper(
         elif backend_str == Backend.NCCL:
             if not is_nccl_available():
                 raise RuntimeError("Distributed package doesn't have NCCL built in")
-            if pg_options is not None:
+            if backend_options is not None:
                 assert isinstance(
-                    pg_options, ProcessGroupNCCL.Options
-                ), "Expected pg_options argument to be of type ProcessGroupNCCL.Options"
-                if pg_options._timeout != timeout:
+                    backend_options, ProcessGroupNCCL.Options
+                ), "Expected backend_options argument to be of type ProcessGroupNCCL.Options"
+                if backend_options._timeout != timeout:
                     warnings.warn(
-                        "pg_options._timeout was specified, "
+                        "backend_options._timeout was specified, "
                         "but timeout kwarg has a default value that will always override it. "
                     )
             else:
-                # default pg_options for NCCL
-                pg_options = ProcessGroupNCCL.Options()
-                pg_options.is_high_priority_stream = False
-            pg_options._timeout = timeout
+                # default backend_options for NCCL
+                backend_options = ProcessGroupNCCL.Options()
+                backend_options.is_high_priority_stream = False
+            backend_options._timeout = timeout
 
             if split_from:
-                pg_options.split_from = split_from
-                pg_options.split_color = _process_group_color(global_ranks_in_group)
-            pg_options.global_ranks_in_group = global_ranks_in_group
-            pg_options.group_name = group_name
+                backend_options.split_from = split_from
+                backend_options.split_color = _process_group_color(
+                    global_ranks_in_group
+                )
+            backend_options.global_ranks_in_group = global_ranks_in_group
+            backend_options.group_name = group_name
             backend_class = ProcessGroupNCCL(
-                backend_prefix_store, group_rank, group_size, pg_options
+                backend_prefix_store, group_rank, group_size, backend_options
             )
             backend_type = ProcessGroup.BackendType.NCCL
         elif backend_str == Backend.UCC and is_ucc_available():
@@ -1804,7 +1810,7 @@ def _new_process_group_helper(
                 dist_backend_opts.group_id = group_name
                 dist_backend_opts.global_ranks_in_group = global_ranks_in_group
 
-                backend_class = creator_fn(dist_backend_opts, pg_options)
+                backend_class = creator_fn(dist_backend_opts, backend_options)
 
         # Set sequence numbers for gloo and nccl backends.
         if backend_str == Backend.GLOO:
@@ -4439,10 +4445,11 @@ def split_group(
     global_ranks_in_my_group = [parent_group_to_global_ranks[rank] for rank in my_group]
 
     prefix_store = PrefixStore(f"{group_name}/", default_store)
-    base_pg_options = ProcessGroup.Options(backend=str(backend))
-    base_pg_options._timeout = timeout
+    # We register the backend after initializing and timeout is set in pg_options.
     pg: ProcessGroup = ProcessGroup(
-        prefix_store, group_rank, len(my_group), base_pg_options
+        prefix_store,
+        group_rank,
+        len(my_group),
     )
     pg.bound_device_id = device_id
 
@@ -4577,7 +4584,7 @@ def _new_group_with_tag(
     ranks=None,
     timeout=None,
     backend=None,
-    pg_options=None,
+    backend_options=None,
     pg_tag=None,
     use_local_synchronization=False,
     group_desc=None,
@@ -4652,7 +4659,7 @@ def _new_group_with_tag(
         backend,
         default_store,
         group_name,
-        pg_options=pg_options,
+        backend_options=backend_options,
         timeout=timeout,
         pg_tag=pg_tag,
         device_id=device_id,
