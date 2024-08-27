@@ -33,15 +33,15 @@ if %XPU_DRIVER_FRESH_INSTALL%=="1" (
 
 set XPU_BUNDLE_PARENT_DIR=C:\Program Files (x86)\Intel\oneAPI
 set XPU_BUNDLE_URL=https://registrationcenter-download.intel.com/akdlm/IRC_NAS/9d1a91e2-e8b8-40a5-8c7f-5db768a6a60c/w_intel-for-pytorch-gpu-dev_p_0.5.3.37_offline.exe
-set XPU_PTI_URL=https://registrationcenter-download.intel.com/akdlm/IRC_NAS/9d1a91e2-e8b8-40a5-8c7f-5db768a6a60c/w_intel-pti-dev_p_0.9.0.37_offline.exe
+@REM set XPU_PTI_URL=https://registrationcenter-download.intel.com/akdlm/IRC_NAS/9d1a91e2-e8b8-40a5-8c7f-5db768a6a60c/w_intel-pti-dev_p_0.9.0.37_offline.exe
 set XPU_BUNDLE_VERSION=0.5.3+31
-set XPU_PTI_VERSION=0.9.0+36
+@REM set XPU_PTI_VERSION=0.9.0+36
 set XPU_BUNDLE_PRODUCT_NAME=intel.oneapi.win.intel-for-pytorch-gpu-dev.product
-set XPU_PTI_PRODUCT_NAME=intel.oneapi.win.intel-pti-dev.product
+@REM set XPU_PTI_PRODUCT_NAME=intel.oneapi.win.intel-pti-dev.product
 set XPU_BUNDLE_INSTALLED=0
-set XPU_PTI_INSTALLED=0
+@REM set XPU_PTI_INSTALLED=0
 set XPU_BUNDLE_UNINSTALL=0
-set XPU_PTI_UNINSTALL=0
+@REM set XPU_PTI_UNINSTALL=0
 
 :: Check if XPU bundle is target version or already installed
 if exist "%XPU_BUNDLE_PARENT_DIR%\Installer\installer.exe" goto xpu_bundle_ver_check
@@ -60,14 +60,14 @@ for /f "tokens=1,2" %%a in (xpu_bundle_installed_ver.log) do (
             set XPU_BUNDLE_UNINSTALL=1
         )
     )
-    if "%%a"=="%XPU_PTI_PRODUCT_NAME%" (
-        echo %%a Installed Version: %%b
-	    set XPU_PTI_INSTALLED=1
-        if not "%XPU_PTI_VERSION%"=="%%b" (
-            start /wait "Installer Title" "%XPU_BUNDLE_PARENT_DIR%\Installer\installer.exe" --action=remove --eula=accept --silent --product-id %XPU_PTI_PRODUCT_NAME% --product-ver %%b --log-dir uninstall_bundle
-            set XPU_PTI_UNINSTALL=1
-        )
-    )
+    @REM if "%%a"=="%XPU_PTI_PRODUCT_NAME%" (
+    @REM     echo %%a Installed Version: %%b
+	@REM     set XPU_PTI_INSTALLED=1
+    @REM     if not "%XPU_PTI_VERSION%"=="%%b" (
+    @REM         start /wait "Installer Title" "%XPU_BUNDLE_PARENT_DIR%\Installer\installer.exe" --action=remove --eula=accept --silent --product-id %XPU_PTI_PRODUCT_NAME% --product-ver %%b --log-dir uninstall_bundle
+    @REM         set XPU_PTI_UNINSTALL=1
+    @REM     )
+    @REM )
 )
 if errorlevel 1 exit /b 1
 if exist xpu_bundle_installed_ver.log del xpu_bundle_installed_ver.log
@@ -85,12 +85,12 @@ start /wait "Intel Pytorch Bundle Installer" "xpu_bundle.exe" --action=install -
 if errorlevel 1 exit /b 1
 del xpu_bundle.exe
 
-:xpu_pti_install
+@REM :xpu_pti_install
 
-curl -o xpu_pti.exe --retry 3 --retry-all-errors -k %XPU_PTI_URL%
-echo "XPU PTI installing..."
-start /wait "Intel PTI Installer" "xpu_pti.exe" --action=install --eula=accept --silent --log-dir install_bundle
-if errorlevel 1 exit /b 1
-del xpu_pti.exe
+@REM curl -o xpu_pti.exe --retry 3 --retry-all-errors -k %XPU_PTI_URL%
+@REM echo "XPU PTI installing..."
+@REM start /wait "Intel PTI Installer" "xpu_pti.exe" --action=install --eula=accept --silent --log-dir install_bundle
+@REM if errorlevel 1 exit /b 1
+@REM del xpu_pti.exe
 
 :xpu_install_end
