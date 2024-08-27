@@ -2,7 +2,7 @@
 import contextlib
 import warnings
 from abc import ABC, abstractmethod
-from typing import Any, Callable, ContextManager, Dict, Optional, Tuple, Union
+from typing import Any, Callable, ContextManager, Dict, List, Optional, Tuple, Union
 
 import torch
 import torch.utils._pytree as pytree
@@ -587,7 +587,7 @@ class BaseFunctionalizeAPI(ABC):
     @abstractmethod
     def unwrap_tensors(
         self, args: Union[torch.Tensor, Tuple[torch.Tensor, ...]]
-    ) -> Union[torch.Tensor, Tuple[torch.Tensor, ...]]:
+    ) -> Any:
         pass
 
     @abstractmethod
@@ -630,8 +630,8 @@ class PythonFunctionalizeAPI(BaseFunctionalizeAPI):
             )
 
     def unwrap_tensors(
-        self, args: Union[torch.Tensor, Tuple[torch.Tensor, ...]]
-    ) -> Union[torch.Tensor, Tuple[torch.Tensor, ...]]:
+        self, args: Union[torch.Tensor, Tuple[torch.Tensor, ...], List[torch.Tensor]]
+    ) -> Any:
         return torch.utils._pytree.tree_map_only(
             FunctionalTensor, FunctionalTensor.from_functional, args
         )
@@ -724,9 +724,11 @@ class FunctorchFunctionalizeAPI(BaseFunctionalizeAPI):
     def functionalize(self, inner_f: Callable) -> Callable:
         return torch.func.functionalize(
             inner_f,
-            remove="mutations_and_views"
-            if self.interpreter.functionalize_add_back_views()
-            else "mutations",
+            remove=(
+                "mutations_and_views"
+                if self.interpreter.functionalize_add_back_views()
+                else "mutations"
+            ),
         )
 
     def redispatch_to_next(self) -> ContextManager:
