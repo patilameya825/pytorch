@@ -87,10 +87,10 @@ del xpu_bundle.exe
 
 :xpu_pti_install
 
-curl -o xpu_pti.exe --retry 3 --retry-all-errors -k %XPU_PTI_URL%
-echo "XPU PTI installing..."
-start /wait "Intel PTI Installer" "xpu_pti.exe" --action=install --eula=accept --silent --log-dir install_bundle
-if errorlevel 1 exit /b 1
-del xpu_pti.exe
+@REM curl -o xpu_pti.exe --retry 3 --retry-all-errors -k %XPU_PTI_URL%
+@REM echo "XPU PTI installing..."
+@REM start /wait "Intel PTI Installer" "xpu_pti.exe" --action=install --eula=accept --silent --log-dir install_bundle
+@REM if errorlevel 1 exit /b 1
+@REM del xpu_pti.exe
 
 :xpu_install_end
