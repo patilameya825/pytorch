@@ -400,42 +400,6 @@ Tensor& add_scalar_(Tensor& self, const Scalar& other, const Scalar& alpha) {
       self, other, std::optional<Scalar>(alpha), VK_KERNEL(add_scalar_inplace));
 }
 
-Tensor quantized_add(
-    const Tensor& self_arg,
-    const Tensor& other_arg,
-    const double scale,
-    const int64_t zero_point) {
-  return quantized_binary_op_tensor(
-      self_arg, other_arg, scale, zero_point, VK_KERNEL(quantized_add));
-}
-
-Tensor quantized_sub(
-    const Tensor& self_arg,
-    const Tensor& other_arg,
-    const double scale,
-    const int64_t zero_point) {
-  return quantized_binary_op_tensor(
-      self_arg, other_arg, scale, zero_point, VK_KERNEL(quantized_sub));
-}
-
-Tensor quantized_mul(
-    const Tensor& self_arg,
-    const Tensor& other_arg,
-    const double scale,
-    const int64_t zero_point) {
-  return quantized_binary_op_tensor(
-      self_arg, other_arg, scale, zero_point, VK_KERNEL(quantized_mul));
-}
-
-Tensor quantized_div(
-    const Tensor& self_arg,
-    const Tensor& other_arg,
-    const double scale,
-    const int64_t zero_point) {
-  return quantized_binary_op_tensor(
-      self_arg, other_arg, scale, zero_point, VK_KERNEL(quantized_div));
-}
-
 Tensor add_tensor(
     const Tensor& self_arg,
     const Tensor& other_arg,
