@@ -72,6 +72,46 @@ def is_same_size_handler(
     return lhs.shape == rhs.shape
 
 
+def found_inf_reduce_handler(
+    op_call: torch._ops.OpOverload,
+    args: Tuple[object, ...],
+    kwargs: Dict[str, object],
+) -> None:
+    op_info = dtensor.DTensor._op_dispatcher.unwrap_to_op_info(op_call, args, kwargs)
+    local_tensor_args = pytree.tree_unflatten(
+        cast(List[object], op_info.local_args), op_info.args_tree_spec
+    )
+    local_tensor_args = cast(Tuple[object, ...], local_tensor_args)
+    local_results = op_call(*local_tensor_args, **op_info.local_kwargs)
+
+    grad_dtensor = cast(list[dtensor.DTensor], args[0])[0]
+    grad_placements = grad_dtensor.placements
+    mesh = grad_dtensor.device_mesh
+
+    found_inf_placements: list[Placement] = []
+    for placement in grad_placements:
+        if isinstance(placement, Replicate):
+            found_inf_placements.append(placement)
+        else:
+            found_inf_placements.append(Partial("max"))
+
+    target_tensor = cast(torch.Tensor, args[1])
+    spec = DTensorSpec(
+        mesh=mesh,
+        placements=tuple(found_inf_placements),
+        tensor_meta=TensorMeta(
+            shape=target_tensor.size(),
+            stride=target_tensor.stride(),
+            dtype=target_tensor.dtype,
+        ),
+    )
+    found_inf_dtensor = dtensor.DTensor(
+        local_tensor=target_tensor, spec=spec, requires_grad=False
+    )
+    found_inf = found_inf_dtensor.full_tensor()
+    target_tensor.copy_(found_inf)
+
+
 class OpDispatcher:
     """
     Op dispatching class instance to handle args/kwargs pre-processing (un-wrapping), sharding
@@ -105,6 +145,7 @@ class OpDispatcher:
             aten.is_same_size.default: is_same_size_handler,
             aten.convolution.default: convolution_handler,
             aten.convolution_backward.default: convolution_backward_handler,
+            aten._amp_foreach_non_finite_check_and_unscale_.default: found_inf_reduce_handler,
         }
 
         # This flag is used internally to control whether we treat the torch.Tensor(non-DTensor)
@@ -237,19 +278,6 @@ class OpDispatcher:
             if output_sharding.output_spec is not None:
                 return args[0]
             else:
-                if op_call == aten._amp_foreach_non_finite_check_and_unscale_.default:
-                    grad_placements = cast(list[dtensor.DTensor], args[0])[0].placements
-                    found_inf_placements: list[Placement] = []
-                    for placement in grad_placements:
-                        if isinstance(placement, Replicate):
-                            found_inf_placements.append(placement)
-                        else:
-                            found_inf_placements.append(Partial("max"))
-                    found_inf_dtensor = dtensor.DTensor.from_local(
-                        args[1], mesh, found_inf_placements
-                    )
-                    found_inf = found_inf_dtensor.full_tensor()
-                    cast(torch.Tensor, args[1]).copy_(found_inf)
                 return None
         elif _is_out_variant_op(op_call):
             # out variant could possibly have multiple out args (i.e. lu_unpack.out)
