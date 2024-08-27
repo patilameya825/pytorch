@@ -14,6 +14,7 @@ from ..variables.builder import ITERTOOLS_POLYFILLED_CLASSES
 __all__ = [
     "chain___new__",
     "chain_from_iterable",
+    "count___new__",
     "tee",
 ]
 
@@ -39,6 +40,24 @@ def chain_from_iterable(iterable: Iterable[Iterable[_T]], /) -> Iterator[_T]:
 
 
 ITERTOOLS_POLYFILLED_CLASSES.add(itertools.chain)
+
+
+# Reference: https://docs.python.org/3/library/itertools.html#itertools.count
+@substitute_in_graph(itertools.count.__new__)  # type: ignore[arg-type]
+def count___new__(
+    cls: type[itertools.count[_T]],  # type: ignore[type-var]
+    start: _T = 0,  # type: ignore[assignment]
+    step: _T = 1,  # type: ignore[assignment]
+) -> Iterator[_T]:
+    assert cls is itertools.count
+
+    n = start
+    while True:
+        yield n
+        n += step  # type: ignore[operator]
+
+
+ITERTOOLS_POLYFILLED_CLASSES.add(itertools.count)
 
 
 # Reference: https://docs.python.org/3/library/itertools.html#itertools.tee
