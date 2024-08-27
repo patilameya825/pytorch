@@ -27,8 +27,11 @@ if not errorlevel 0 goto fail
 if "%USE_XPU%"=="1" (
   :: Install oneAPI bundle
   call %INSTALLER_DIR%\install_xpu.bat
-  call "C:\Program Files (x86)\Intel\oneAPI\oneAPI\pytorch-gpu-dev-0.5\oneapi-vars.bat" 
-  call "C:\Program Files (x86)\Intel\oneAPI\oneAPI\pti\latest\env\vars.bat"
+  if errorlevel 1 exit /b 1
+  call C:\Program Files (x86)\Intel\oneAPI\pytorch-gpu-dev-0.5\oneapi-vars.bat
+  if errorlevel 1 exit /b 1
+  call C:\Program Files (x86)\Intel\oneAPI\pti\latest\env\vars.bat
+  if errorlevel 1 exit /b 1
 )
 
 :: Miniconda has been installed as part of the Windows AMI with all the dependencies.
