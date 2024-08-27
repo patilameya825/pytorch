@@ -89,6 +89,3 @@ if errorlevel 1 exit /b 1
 del xpu_pti.exe
 
 :xpu_install_end
-REM Set environment variables
-call "%XPU_PARENT_DIR%\oneAPI\pytorch-gpu-dev-0.5\oneapi-vars.bat" 
-call "%XPU_PARENT_DIR%\oneAPI\pti\latest\env\vars.bat"
