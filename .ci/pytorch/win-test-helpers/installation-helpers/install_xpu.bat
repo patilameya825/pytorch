@@ -14,15 +14,20 @@ echo Illegal XPU installation mode. The value can be "bundle"/"driver"/"all"
 echo If keep the value as space, will use default "bundle" mode
 exit /b 1
 
+set XPU_DRIVER_FRESH_INSTALL=0
+
 :xpu_driver_install_start
 :: TODO Need more testing for driver installation
-set XPU_DRIVER_LINK=https://downloadmirror.intel.com/830975/gfx_win_101.5972.exe
-curl -o xpu_driver.exe --retry 3 --retry-all-errors -k %XPU_DRIVER_LINK%
-echo "XPU Driver installing..."
-start /wait "Intel XPU Driver Installer" "xpu_driver.exe"
-if errorlevel 1 exit /b 1
-del xpu_driver.exe
-if "%XPU_INSTALL_MODE%"=="driver" goto xpu_install_end
+if %XPU_DRIVER_FRESH_INSTALL%=="1" (
+:: TODO Need to check if the driver is needed
+    set XPU_DRIVER_LINK=https://downloadmirror.intel.com/830975/gfx_win_101.5972.exe
+    curl -o xpu_driver.exe --retry 3 --retry-all-errors -k %XPU_DRIVER_LINK%
+    echo "XPU Driver installing..."
+    start /wait "Intel XPU Driver Installer" "xpu_driver.exe"
+    if errorlevel 1 exit /b 1
+    del xpu_driver.exe
+    if "%XPU_INSTALL_MODE%"=="driver" goto xpu_install_end
+)
 
 :xpu_bundle_install_start
 
